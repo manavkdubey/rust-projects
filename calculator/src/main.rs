@@ -1,18 +1,21 @@
 mod calculator;
-use druid::widget::{Button, Label};
-use druid::{AppLauncher, Widget, WindowDesc};
 
-fn build_ui() -> impl Widget<()> {
-    Label::new("Calculator");
-}
-
-fn main() {
-    let main_window = WindowDesc::new(build_ui())
-        .window_size((600.0, 400.0))
-        .title("Calculator");
-    let initial_data = ();
-
-    AppLauncher::with_window(main_window)
-        .launch(initial_data)
-        .expect("Failed to launch application");
+fn main() -> Result<(), calculator::Error> {
+    loop {
+        let mut input = String::new();
+        match std::io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                let tokens = calculator::Calculator::parse(input);
+                if tokens.is_err() {
+                    println!("{:?}", tokens.err().unwrap());
+                    continue;
+                }
+                let expr = calculator::Calculator::expression(tokens?);
+                if let Some(v) = calculator::Calculator::evaluate(expr) {
+                    println!("{}", v);
+                }
+            }
+            Err(error) => println!("error: {}", error),
+        }
+    }
 }
